@@ -25,11 +25,13 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; allowedRoles?: strin
 };
 
 const DashboardRouter: React.FC = () => {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Chargement...</div>;
+  }
 
   if (!user) return <Navigate to="/login" replace />;
-
-  console.log('🧭 Redirection vers dashboard pour rôle :', user.role);
 
   switch (user.role) {
     case 'admin':
@@ -44,22 +46,40 @@ const DashboardRouter: React.FC = () => {
 };
 
 const AppContent: React.FC = () => {
-  const { user } = useUser();
+  const { user, isLoading } = useUser();
+
+  if (isLoading) {
+    return <div className="min-h-screen flex items-center justify-center">Chargement...</div>;
+  }
 
   return (
     <Router>
       <Routes>
-        <Route path="/login" element={!user ? <Login /> : <Navigate to="/" replace />} />
-        <Route path="/register" element={
-          <ProtectedRoute allowedRoles={['admin']}>
-            <Register />
-          </ProtectedRoute>
-        } />
-        <Route path="/" element={
-          <ProtectedRoute>
-            <DashboardRouter />
-          </ProtectedRoute>
-        } />
+        <Route
+          path="/login"
+          element={
+            !user
+              ? <Login />
+              : <Navigate to="/" replace />
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <Register />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <DashboardRouter />
+            </ProtectedRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Router>
   );
